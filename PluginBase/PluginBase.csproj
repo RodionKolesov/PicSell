@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+  <TargetFramework>net48</TargetFramework>
+  <LangVersion>8.0</LangVersion>
+</PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0-preview.4.25258.110" />
+  </ItemGroup>
+
+</Project>

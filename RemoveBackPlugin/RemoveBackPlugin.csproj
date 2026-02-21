@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.17.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PluginBase">
+      <HintPath>..\PluginBase\bin\Debug\net48\PluginBase.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="models\u2net.onnx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>models\u2net.onnx</Link>
+    </None>
+  </ItemGroup>
+
+  <!-- Copy native onnxruntime DLLs flat into output dir so Assembly.LoadFrom can find them -->
+  <Target Name="CopyOnnxRuntimeNative" AfterTargets="Build">
+    <ItemGroup>
+      <NativeOnnxDlls Include="$(NuGetPackageRoot)microsoft.ml.onnxruntime\1.17.3\runtimes\win-x64\native\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeOnnxDlls)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

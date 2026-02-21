@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>Plugin_AutoContrast</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>10.0</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="10.0.0-preview.4.25258.110" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PluginBase\PluginBase.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PluginBase">
+      <HintPath>..\PluginBase\bin\Debug\net48\PluginBase.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

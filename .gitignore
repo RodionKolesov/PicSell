@@ -1,0 +1,40 @@
+# Build output
+bin/
+obj/
+
+# NuGet packages
+packages/
+
+# VS files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Database files
+*.db
+*.mdf
+*.ldf
+
+# Temp
+tempimages/
+versions/
+logs.db
+
+# OS
+Thumbs.db
+desktop.ini
+
+# Config with possible secrets
+config.ini
+
+# Large ML models
+*.onnx
+
+# Compiled plugin DLLs (deployed)
+plugins/*.dll
+plugins/models/
+
+# Documents
+*.pdf
