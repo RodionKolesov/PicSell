@@ -15,9 +15,11 @@
     <Deterministic>true</Deterministic>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <RuntimeIdentifiers>win</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -69,6 +71,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AIAssistantForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AIAssistantForm.Designer.cs">
+      <DependentUpon>AIAssistantForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BannerGeneratorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BannerGeneratorForm.Designer.cs">
+      <DependentUpon>BannerGeneratorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="BackgroundEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -110,6 +124,12 @@
     <Compile Include="StatisticForm.Designer.cs">
       <DependentUpon>StatisticForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AIAssistantForm.resx">
+      <DependentUpon>AIAssistantForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BannerGeneratorForm.resx">
+      <DependentUpon>BannerGeneratorForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>

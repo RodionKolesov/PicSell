@@ -63,7 +63,9 @@
             this.removeBackButton = new System.Windows.Forms.Button();
             this.replaceBackButton = new System.Windows.Forms.Button();
             this.editImageButton = new System.Windows.Forms.Button();
+            this.bannerGeneratorButton = new System.Windows.Forms.Button();
             this.pluginsPanel = new System.Windows.Forms.Panel();
+            this.aiEmbedPanel = new System.Windows.Forms.Panel();
             this.changeLabel = new System.Windows.Forms.Label();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.menuStrip1.SuspendLayout();
@@ -434,9 +436,20 @@
             this.editImageButton.UseVisualStyleBackColor = true;
             this.editImageButton.Click += new System.EventHandler(this.editImageButton_Click);
             //
+            // bannerGeneratorButton
+            //
+            this.bannerGeneratorButton.Location = new System.Drawing.Point(15, 651);
+            this.bannerGeneratorButton.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.bannerGeneratorButton.Name = "bannerGeneratorButton";
+            this.bannerGeneratorButton.Size = new System.Drawing.Size(388, 45);
+            this.bannerGeneratorButton.TabIndex = 26;
+            this.bannerGeneratorButton.Text = "🎨  Варианты обработки";
+            this.bannerGeneratorButton.UseVisualStyleBackColor = true;
+            this.bannerGeneratorButton.Click += new System.EventHandler(this.bannerGeneratorButton_Click);
+            //
             // pluginsPanel
             //
-            this.pluginsPanel.Location = new System.Drawing.Point(15, 651);
+            this.pluginsPanel.Location = new System.Drawing.Point(15, 700);
             this.pluginsPanel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pluginsPanel.Name = "pluginsPanel";
             this.pluginsPanel.Size = new System.Drawing.Size(388, 362);
@@ -475,6 +488,7 @@
             this.splitContainer1.Panel2.Controls.Add(this.removeBackButton);
             this.splitContainer1.Panel2.Controls.Add(this.replaceBackButton);
             this.splitContainer1.Panel2.Controls.Add(this.editImageButton);
+            this.splitContainer1.Panel2.Controls.Add(this.bannerGeneratorButton);
             this.splitContainer1.Panel2.Controls.Add(this.pluginsPanel);
             this.splitContainer1.Panel2.Controls.Add(this.hslGroupBox);
             this.splitContainer1.Size = new System.Drawing.Size(1259, 690);
@@ -487,8 +501,15 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1259, 718);
+            // aiEmbedPanel
+            this.aiEmbedPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.aiEmbedPanel.Height = 300;
+            this.aiEmbedPanel.Name = "aiEmbedPanel";
+            this.aiEmbedPanel.TabIndex = 27;
+
             this.Controls.Add(this.changeLabel);
             this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.aiEmbedPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -560,6 +581,8 @@
         private System.Windows.Forms.Button removeBackButton;
         private System.Windows.Forms.Button replaceBackButton;
         private System.Windows.Forms.Button editImageButton;
+        private System.Windows.Forms.Button bannerGeneratorButton;
+        private System.Windows.Forms.Panel aiEmbedPanel;
 
         //вручную изменён на public
         public System.Windows.Forms.Panel pluginsPanel;

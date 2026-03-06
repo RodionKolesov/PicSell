@@ -109,6 +109,7 @@ namespace PicSell
 
 
         public static MainForm Instance { get; private set; }
+        private AIAssistantForm _embeddedAI;
 
         public MainForm()
         {
@@ -142,6 +143,15 @@ namespace PicSell
 
             Instance = this;
             onePhButton.Enabled = false; //потому что ни одно изображение не выделено, не с чем работать
+
+            // Встроенный AI ассистент
+            _embeddedAI = new AIAssistantForm(new System.Collections.Generic.List<int>());
+            _embeddedAI.TopLevel = false;
+            _embeddedAI.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            _embeddedAI.Dock = System.Windows.Forms.DockStyle.Fill;
+            aiEmbedPanel.BackColor = DarkTheme.DarkBg;
+            aiEmbedPanel.Controls.Add(_embeddedAI);
+            _embeddedAI.Show();
 
             PluginManager pm = new PluginManager();
             pm.LoadPluginsFromIni();
@@ -287,7 +297,7 @@ namespace PicSell
         #region RemoveBackground
         private IImageEditing _removeBackPlugin;
 
-        private IImageEditing GetRemoveBackPlugin()
+        internal IImageEditing GetRemoveBackPlugin()
         {
             if (_removeBackPlugin != null)
                 return _removeBackPlugin;
@@ -314,6 +324,12 @@ namespace PicSell
 
             if (!File.Exists(dllPath))
                 throw new FileNotFoundException("RemoveBackPlugin.dll не найден.");
+
+            // Добавляем папку плагина в PATH, чтобы onnxruntime.dll нашла свои зависимости
+            string resolvedPluginDir = Path.GetFullPath(Path.GetDirectoryName(dllPath));
+            string currentPath = Environment.GetEnvironmentVariable("PATH") ?? "";
+            if (!currentPath.Contains(resolvedPluginDir))
+                Environment.SetEnvironmentVariable("PATH", resolvedPluginDir + ";" + currentPath);
 
             Assembly asm = Assembly.LoadFrom(dllPath);
             var type = asm.GetTypes().FirstOrDefault(t => typeof(IImageEditing).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract);
@@ -373,7 +389,8 @@ namespace PicSell
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Ошибка при удалении фона: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                var inner = ex.InnerException?.InnerException?.Message ?? ex.InnerException?.Message ?? ex.Message;
+                MessageBox.Show("Ошибка при удалении фона:\n" + inner, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
@@ -382,7 +399,7 @@ namespace PicSell
             }
         }
 
-        private Image LoadImageFromDB(int imgId)
+        internal Image LoadImageFromDB(int imgId)
         {
             try
             {
@@ -438,68 +455,46 @@ namespace PicSell
 
                     int total = selectedItems.Count;
 
-                    if (total == 1)
-                    {
-                        // Single photo: open editor for positioning
-                        string imageKey = selectedItems[0].ImageKey;
-                        if (!int.TryParse(imageKey, out int imgId)) return;
-                        Image foreground = LoadImageFromDB(imgId);
-                        if (foreground == null) { MessageBox.Show("Не удалось загрузить изображение.", "Ошибка"); return; }
+                    // Auto-center each foreground on background (no editor)
+                    replaceBackButton.Enabled = false;
+                    int done = 0;
 
-                        using (var editor = new BackgroundEditorForm(foreground, bgImage))
+                    foreach (var item in selectedItems)
+                    {
+                        string imageKey = item.ImageKey;
+                        if (!int.TryParse(imageKey, out int imgId)) continue;
+
+                        done++;
+                        replaceBackButton.Text = $"Замена {done}/{total}...";
+                        Application.DoEvents();
+
+                        Image foreground = LoadImageFromDB(imgId);
+                        if (foreground == null) continue;
+
+                        // Compose: draw background, center foreground on it
+                        int w = bgImage.Width, h = bgImage.Height;
+                        var result = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                        using (Graphics g = Graphics.FromImage(result))
                         {
-                            if (editor.ShowDialog() == DialogResult.OK)
-                            {
-                                if (lastSelectedKey == imageKey && CurrentPictureBox.Image != null)
-                                    CurrentPictureBox.Image = editor.ResultImage;
-                                commitNewVersion(editor.ResultImage, imgId, "замена фона");
-                            }
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            g.DrawImage(bgImage, 0, 0, w, h);
+
+                            float fx = (w - foreground.Width) / 2f;
+                            float fy = (h - foreground.Height) / 2f;
+                            g.DrawImage(foreground, fx, fy, foreground.Width, foreground.Height);
                         }
+
+                        if (lastSelectedKey == imageKey && CurrentPictureBox.Image != null)
+                            CurrentPictureBox.Image = result;
+
+                        commitNewVersion(result, imgId, "замена фона", total > 1 ? "batch" : "one");
                         foreground.Dispose();
                     }
-                    else
-                    {
-                        // Batch: auto-center each foreground on background
-                        replaceBackButton.Enabled = false;
-                        int done = 0;
 
-                        foreach (var item in selectedItems)
-                        {
-                            string imageKey = item.ImageKey;
-                            if (!int.TryParse(imageKey, out int imgId)) continue;
-
-                            done++;
-                            replaceBackButton.Text = $"Замена {done}/{total}...";
-                            Application.DoEvents();
-
-                            Image foreground = LoadImageFromDB(imgId);
-                            if (foreground == null) continue;
-
-                            // Compose: draw background, center foreground on it
-                            int w = bgImage.Width, h = bgImage.Height;
-                            var result = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                            using (Graphics g = Graphics.FromImage(result))
-                            {
-                                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
-                                g.DrawImage(bgImage, 0, 0, w, h);
-
-                                float fx = (w - foreground.Width) / 2f;
-                                float fy = (h - foreground.Height) / 2f;
-                                g.DrawImage(foreground, fx, fy, foreground.Width, foreground.Height);
-                            }
-
-                            if (lastSelectedKey == imageKey && CurrentPictureBox.Image != null)
-                                CurrentPictureBox.Image = result;
-
-                            commitNewVersion(result, imgId, "замена фона", "batch");
-                            foreground.Dispose();
-                        }
-
-                        updateListView();
-                        replaceBackButton.Enabled = true;
-                        replaceBackButton.Text = "Заменить фон";
-                    }
+                    if (total > 1) updateListView();
+                    replaceBackButton.Enabled = true;
+                    replaceBackButton.Text = "Заменить фон";
 
                     bgImage.Dispose();
                 }
@@ -546,6 +541,21 @@ namespace PicSell
                 MessageBox.Show("Ошибка при работе с редактором изображения: " + ex.Message, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void bannerGeneratorButton_Click(object sender, EventArgs e)
+        {
+            if (CurrentListView.SelectedItems.Count == 0)
+            {
+                MessageBox.Show("Сначала выберите фото.", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            string imageKey = CurrentListView.SelectedItems[0].ImageKey;
+            if (!int.TryParse(imageKey, out int imgId)) return;
+
+            new BannerGeneratorForm(imgId).ShowDialog(this);
+        }
+
         #endregion
 
         internal List<Pixel> pixels;
@@ -824,6 +834,12 @@ namespace PicSell
                 }
             }
             else if (CurrentListView.SelectedItems.Count <= 0) onePhButton.Enabled = false;
+
+            // Обновляем AI ассистент выбранными фото
+            var aiIds = new System.Collections.Generic.List<int>();
+            foreach (ListViewItem item in CurrentListView.SelectedItems)
+                if (int.TryParse(item.ImageKey, out int aid)) aiIds.Add(aid);
+            _embeddedAI?.UpdateImageIds(aiIds);
         }
 
         #endregion
